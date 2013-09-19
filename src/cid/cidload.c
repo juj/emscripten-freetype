@@ -146,7 +146,7 @@
   }
 
 
-  FT_CALLBACK_DEF( FT_Error )
+  FT_CALLBACK_DEF( void )
   cid_parse_font_matrix( CID_Face     face,
                          CID_Parser*  parser )
   {
@@ -170,14 +170,18 @@
       result = cid_parser_to_fixed_array( parser, 6, temp, 3 );
 
       if ( result < 6 )
-        return FT_THROW( Invalid_File_Format );
+      {
+        FT_THROW( Invalid_File_Format );
+        return;
+      }
 
       temp_scale = FT_ABS( temp[3] );
 
       if ( temp_scale == 0 )
       {
         FT_ERROR(( "cid_parse_font_matrix: invalid font matrix\n" ));
-        return FT_THROW( Invalid_File_Format );
+        FT_THROW( Invalid_File_Format );
+        return;
       }
 
       /* Set Units per EM based on FontMatrix values.  We set the value to */
@@ -206,12 +210,10 @@
       offset->x  = temp[4] >> 16;
       offset->y  = temp[5] >> 16;
     }
-
-    return FT_Err_Ok;
   }
 
 
-  FT_CALLBACK_DEF( FT_Error )
+  FT_CALLBACK_DEF( void )
   parse_fd_array( CID_Face     face,
                   CID_Parser*  parser )
   {
@@ -225,8 +227,8 @@
     if ( num_dicts < 0 )
     {
       FT_ERROR(( "parse_fd_array: invalid number of dictionaries\n" ));
-      error = FT_THROW( Invalid_File_Format );
-      goto Exit;
+      FT_THROW( Invalid_File_Format );
+      return;
     }
 
     if ( !cid->font_dicts )
@@ -235,7 +237,7 @@
 
 
       if ( FT_NEW_ARRAY( cid->font_dicts, num_dicts ) )
-        goto Exit;
+        return;
 
       cid->num_dicts = num_dicts;
 
@@ -249,9 +251,7 @@
         dict->private_dict.lenIV = 4;
       }
     }
-
-  Exit:
-    return error;
+    FT_UNUSED(error);
   }
 
 
@@ -259,7 +259,7 @@
   /* and CID_FaceDictRec (both are public header files and can't  */
   /* changed); we simply copy the value                           */
 
-  FT_CALLBACK_DEF( FT_Error )
+  FT_CALLBACK_DEF( void )
   parse_expansion_factor( CID_Face     face,
                           CID_Parser*  parser )
   {
@@ -273,8 +273,6 @@
       dict->expansion_factor              = cid_parser_to_fixed( parser, 0 );
       dict->private_dict.expansion_factor = dict->expansion_factor;
     }
-
-    return FT_Err_Ok;
   }
 
 
